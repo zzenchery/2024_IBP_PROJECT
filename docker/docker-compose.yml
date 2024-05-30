@@ -1,0 +1,43 @@
+version: "3.7"
+services:
+  ibp_project_webserver:
+    build: .
+    ports:
+      - "8080:80"
+    depends_on:
+      - ibp_project_mysql
+    command: '/bin/bash /usr/local/bin/application.sh'
+    volumes:
+      - ../../ibp_project:/home/web/ibp_project
+    networks:
+      - ibp_project_node_net
+
+  ibp_project_mysql:
+    image: mysql:5.7
+    command: --max_allowed_packet=20G
+    environment:
+      MYSQL_ROOT_PASSWORD: root
+      MYSQL_DATABASE: ibp_project
+    networks:
+      ibp_project_node_net:
+        ipv4_address: 170.46.0.3
+
+  ibp_project_phpmyadmin:
+    image: phpmyadmin
+    restart: always
+    ports:
+      - '8081:80'
+    environment:
+      - PMA_USER=root
+      - PMA_PASSWORD=root
+      - PMA_HOST=ibp_project_mysql
+      - MYSQL_ROOT_PASSWORD=root
+    networks:
+      ibp_project_node_net:
+        ipv4_address: 170.46.0.5
+networks:
+  ibp_project_node_net:
+    ipam:
+      driver: default
+      config:
+        - subnet: 170.46.0.0/16
